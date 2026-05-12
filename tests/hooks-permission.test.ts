@@ -89,17 +89,12 @@ function buildMessage(id: string, role: "user" | "assistant", text: string): Wit
 
 test("system prompt handler caches full model context for percentage thresholds", async () => {
     const state = createSessionState()
-    const handler = createSystemPromptHandler(
-        state,
-        new Logger(false),
-        buildConfig("deny"),
-        {
-            reload() {},
-            getRuntimePrompts() {
-                return {} as any
-            },
-        } as any,
-    )
+    const handler = createSystemPromptHandler(state, new Logger(false), buildConfig("deny"), {
+        reload() {},
+        getRuntimePrompts() {
+            return {} as any
+        },
+    } as any)
 
     await handler(
         {
