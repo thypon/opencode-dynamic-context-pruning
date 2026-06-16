@@ -25,6 +25,7 @@ DCP remains available for OpenCode plugin users, but new features are landing in
 
 ```bash
 npm i -g sleev
+sleev
 ```
 
 ## How It Works
