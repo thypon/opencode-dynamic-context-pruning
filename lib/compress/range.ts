@@ -25,6 +25,7 @@ import {
     wrapCompressedSummary,
 } from "./state"
 import type { CompressRangeToolArgs } from "./types"
+import { generateSummary } from "./summary-generator"
 
 function buildSchema() {
     return {
@@ -138,11 +139,20 @@ export function createCompressRangeTool(ctx: ToolContext): ReturnType<typeof too
                     injected.consumedBlockIds,
                 )
 
+                let finalSummary = completedSummary.expandedSummary
+                if (ctx.config.compress.model) {
+                    finalSummary = await generateSummary(
+                        ctx.config.compress.model,
+                        finalSummary,
+                        ctx.logger,
+                    )
+                }
+
                 preparedPlans.push({
                     entry: plan.entry,
                     selection: plan.selection,
                     anchorMessageId: plan.anchorMessageId,
-                    finalSummary: completedSummary.expandedSummary,
+                    finalSummary,
                     consumedBlockIds: completedSummary.consumedBlockIds,
                 })
             }

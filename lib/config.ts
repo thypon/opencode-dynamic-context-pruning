@@ -27,6 +27,7 @@ export interface CompressConfig {
     protectedTools: string[]
     protectTags: boolean
     protectUserMessages: boolean
+    model?: string
 }
 
 export interface Commands {
@@ -126,6 +127,7 @@ export const VALID_CONFIG_KEYS = new Set([
     "compress.protectedTools",
     "compress.protectTags",
     "compress.protectUserMessages",
+    "compress.model",
     "strategies",
     "strategies.deduplication",
     "strategies.deduplication.enabled",
@@ -440,6 +442,14 @@ export function validateConfigTypes(config: Record<string, any>): ValidationErro
                     key: "compress.protectUserMessages",
                     expected: "boolean",
                     actual: typeof compress.protectUserMessages,
+                })
+            }
+
+            if (compress.model !== undefined && typeof compress.model !== "string") {
+                errors.push({
+                    key: "compress.model",
+                    expected: "string",
+                    actual: typeof compress.model,
                 })
             }
 
@@ -855,6 +865,7 @@ function mergeCompress(
         protectedTools: [...new Set([...base.protectedTools, ...(override.protectedTools ?? [])])],
         protectTags: override.protectTags ?? base.protectTags,
         protectUserMessages: override.protectUserMessages ?? base.protectUserMessages,
+        model: override.model ?? base.model,
     }
 }
 

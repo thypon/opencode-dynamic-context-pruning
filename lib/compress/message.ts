@@ -12,6 +12,7 @@ import {
     wrapCompressedSummary,
 } from "./state"
 import type { CompressMessageToolArgs } from "./types"
+import { generateSummary } from "./summary-generator"
 
 function buildSchema() {
     return {
@@ -73,7 +74,7 @@ export function createCompressMessageTool(ctx: ToolContext): ReturnType<typeof t
 
             const preparedPlans: Array<{
                 plan: (typeof plans)[number]
-                summaryWithTools: string
+                finalSummary: string
             }> = []
 
             for (const plan of plans) {
@@ -96,17 +97,26 @@ export function createCompressMessageTool(ctx: ToolContext): ReturnType<typeof t
                     ctx.config.protectedFilePatterns,
                 )
 
+                let finalSummary = summaryWithTools
+                if (ctx.config.compress.model) {
+                    finalSummary = await generateSummary(
+                        ctx.config.compress.model,
+                        finalSummary,
+                        ctx.logger,
+                    )
+                }
+
                 preparedPlans.push({
                     plan,
-                    summaryWithTools,
+                    finalSummary,
                 })
             }
 
             const runId = allocateRunId(ctx.state)
 
-            for (const { plan, summaryWithTools } of preparedPlans) {
+            for (const { plan, finalSummary } of preparedPlans) {
                 const blockId = allocateBlockId(ctx.state)
-                const storedSummary = wrapCompressedSummary(blockId, summaryWithTools)
+                const storedSummary = wrapCompressedSummary(blockId, finalSummary)
                 const summaryTokens = countTokens(storedSummary)
 
                 applyCompressionState(
@@ -132,7 +142,7 @@ export function createCompressMessageTool(ctx: ToolContext): ReturnType<typeof t
                 notifications.push({
                     blockId,
                     runId,
-                    summary: summaryWithTools,
+                    summary: finalSummary,
                     summaryTokens,
                 })
             }
